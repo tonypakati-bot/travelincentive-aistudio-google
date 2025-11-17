@@ -29,7 +29,7 @@ ASSICURAZIONE AGGIUNTIVA
 
 
 // Type definition for a document
-type TermsDocument = {
+export type TermsDocument = {
   id: number;
   title: string;
   trip: string | null; // null for global
@@ -47,7 +47,7 @@ const createInitialHtml = (text: string): string => {
 };
 
 
-const initialDocuments: TermsDocument[] = [
+export const initialDocuments: TermsDocument[] = [
     {
         id: 1,
         title: 'Global Terms & Conditions',
@@ -212,8 +212,12 @@ const TermsModal: React.FC<TermsModalProps> = ({ documentToEdit, onClose, onSave
 
 
 // --- Main Page Component ---
-const TermsConditions: React.FC = () => {
-    const [documents, setDocuments] = useState<TermsDocument[]>(initialDocuments);
+interface TermsConditionsProps {
+    documents: TermsDocument[];
+    setDocuments: React.Dispatch<React.SetStateAction<TermsDocument[]>>;
+}
+
+const TermsConditions: React.FC<TermsConditionsProps> = ({ documents, setDocuments }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<TermsDocument | null>(null);
     

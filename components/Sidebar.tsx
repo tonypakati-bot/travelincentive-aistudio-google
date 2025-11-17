@@ -10,7 +10,8 @@ import {
     DocumentsIcon,
     CommunicationIcon,
     ReportIcon,
-    FormIcon
+    FormIcon,
+    InformationCircleIcon
 } from './icons';
 
 interface SidebarProps {
@@ -49,6 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
         { key: 'manage-participants', icon: <UsersIcon className="w-5 h-5"/>, label: 'Manage Participants' },
         { key: 'forms', icon: <FormIcon className="w-5 h-5"/>, label: 'Forms' },
         { key: 'communications', icon: <CommunicationIcon className="w-5 h-5"/>, label: 'Communications' },
+        { key: 'useful-informations', icon: <InformationCircleIcon className="w-5 h-5"/>, label: 'Useful Informations' },
         { key: 'privacy-policy', icon: <DocumentIcon className="w-5 h-5"/>, label: 'Privacy Policy' },
         { key: 'terms-conditions', icon: <DocumentIcon className="w-5 h-5"/>, label: 'Terms & Conditions' },
         { key: 'documents', icon: <DocumentsIcon className="w-5 h-5"/>, label: 'Documents' },

@@ -10,10 +10,11 @@ import CreateForm from './components/CreateForm';
 import ManageParticipants from './components/ManageParticipants';
 import Reports from './components/Reports';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsConditions from './components/TermsConditions';
+import TermsConditions, { initialDocuments, TermsDocument } from './components/TermsConditions';
 import SendReminderModal from './components/SendReminderModal';
 import SendInvitesModal from './components/SendInvitesModal';
 import Documents from './components/Documents';
+import UsefulInformations, { initialInformations, UsefulInfoEntry } from './components/UsefulInformations';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState('dashboard');
@@ -28,6 +29,9 @@ const App: React.FC = () => {
 
   const [isInvitesModalOpen, setIsInvitesModalOpen] = useState(false);
   const [invitesModalData, setInvitesModalData] = useState<{ tripName: string; inviteeCount: number } | null>(null);
+  
+  const [usefulInformations, setUsefulInformations] = useState<UsefulInfoEntry[]>(initialInformations);
+  const [termsDocuments, setTermsDocuments] = useState<TermsDocument[]>(initialDocuments);
 
 
   // Trip form handlers
@@ -114,7 +118,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (tripFormMode !== 'hidden') {
-      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} />;
+      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} usefulInformations={usefulInformations} termsDocuments={termsDocuments} />;
     }
 
     if (isCommFormVisible) {
@@ -134,12 +138,14 @@ const App: React.FC = () => {
         return <ManageParticipants onSendReminder={handleOpenReminderModal} />;
       case 'communications':
         return <Communications onCreateCommunication={handleCreateCommunication} />;
+      case 'useful-informations':
+        return <UsefulInformations informations={usefulInformations} setInformations={setUsefulInformations} />;
       case 'forms':
         return <Forms onCreateForm={handleCreateForm} />;
       case 'privacy-policy':
         return <PrivacyPolicy />;
       case 'terms-conditions':
-        return <TermsConditions />;
+        return <TermsConditions documents={termsDocuments} setDocuments={setTermsDocuments} />;
       case 'documents':
         return <Documents />;
       case 'reports':
