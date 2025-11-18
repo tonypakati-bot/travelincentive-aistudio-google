@@ -7,9 +7,10 @@ interface SendInvitesModalProps {
     onSend: (emailBody: string) => void;
     tripName: string;
     inviteeCount: number;
+    initialBody?: string;
 }
 
-const emailPreviewText = `OGGETTO: NVITO RISERVATO E PERSONALE
+const defaultEmailPreviewText = `OGGETTO: INVITO RISERVATO E PERSONALE
 
 Bergamo, 12 Giugno 2025
 
@@ -42,16 +43,16 @@ Società Consortile a responsabilità limitata
 Il Presidente
 Antonio Portaccio`;
 
-const SendInvitesModal: React.FC<SendInvitesModalProps> = ({ isOpen, onClose, onSend, tripName, inviteeCount }) => {
+const SendInvitesModal: React.FC<SendInvitesModalProps> = ({ isOpen, onClose, onSend, tripName, inviteeCount, initialBody }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [emailContent, setEmailContent] = useState(emailPreviewText);
+    const [emailContent, setEmailContent] = useState(initialBody || defaultEmailPreviewText);
 
     useEffect(() => {
         if (isOpen) {
             setIsEditing(false);
-            setEmailContent(emailPreviewText);
+            setEmailContent(initialBody || defaultEmailPreviewText);
         }
-    }, [isOpen]);
+    }, [isOpen, initialBody]);
 
     if (!isOpen) return null;
 

@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { SearchIcon, PencilIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, UploadIcon, ChevronDownIcon, DownloadIcon } from './icons';
 
-type ParticipantStatus = 'Registered' | 'Invited';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { SearchIcon, PencilIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, UploadIcon, ChevronDownIcon, DownloadIcon, PlusIcon, UsersIcon, CheckCircleIcon } from './icons';
+
+type ParticipantStatus = 'Registered' | 'Invited' | 'To Invite';
 
 type Participant = {
     id: number;
@@ -14,18 +15,22 @@ type Participant = {
 
 interface ManageParticipantsProps {
     onSendReminder: (count: number, onSent: () => void) => void;
+    onSendInvite: (tripName: string, count: number) => void;
 }
 
-const participants: Participant[] = [
-    { id: 1, name: 'Giulia Rosa', email: 'g.rosa@example.com', trip: 'Trip to Ibiza', group: 'VIP', status: 'Invited' },
-    { id: 2, name: 'Laura Bianchi', email: 'l.bianchi@example.com', trip: 'Trip to Ibiza', group: 'Roma', status: 'Invited' },
+// Mock Data
+const participantsData: Participant[] = [
+    { id: 1, name: 'Marco Gialli', email: 'm.gialli@example.com', trip: 'Sales Kick-off Dubai', group: 'Milano', status: 'To Invite' },
+    { id: 2, name: 'Paolo Verdi', email: 'p.verdi@example.com', trip: 'Sales Kick-off Dubai', group: 'VIP', status: 'Invited' },
     { id: 3, name: 'Luca Azzurri', email: 'l.azzurri@example.com', trip: 'Team Retreat Mykonos', group: 'Tutti', status: 'Registered' },
-    { id: 4, name: 'Marco Gialli', email: 'm.gialli@example.com', trip: 'Sales Kick-off Dubai', group: 'Milano', status: 'Registered' },
-    { id: 5, name: 'Mario Rossi', email: 'm.rossi@example.com', trip: 'Trip to Ibiza', group: 'Milano', status: 'Registered' },
-    { id: 6, name: 'Paolo Verdi', email: 'p.verdi@example.com', trip: 'Sales Kick-off Dubai', group: 'VIP', status: 'Invited' },
-    { id: 7, name: 'Sara Neri', email: 's.neri@example.com', trip: 'Team Retreat Mykonos', group: 'Tutti', status: 'Invited' },
+    { id: 4, name: 'Sara Neri', email: 's.neri@example.com', trip: 'Team Retreat Mykonos', group: 'Tutti', status: 'Invited' },
+    { id: 5, name: 'Giulia Rosa', email: 'g.rosa@example.com', trip: 'Trip to Ibiza', group: 'VIP', status: 'Invited' },
+    { id: 6, name: 'Laura Bianchi', email: 'l.bianchi@example.com', trip: 'Trip to Ibiza', group: 'Roma', status: 'To Invite' },
+    { id: 7, name: 'Mario Rossi', email: 'm.rossi@example.com', trip: 'Trip to Ibiza', group: 'Milano', status: 'Registered' },
+    { id: 8, name: 'Elena Bianchi', email: 'e.bianchi@example.com', trip: 'Sales Kick-off Dubai', group: 'Roma', status: 'Registered' },
+    { id: 9, name: 'Roberto Neri', email: 'r.neri@example.com', trip: 'Ski Trip to Aspen', group: 'Roma', status: 'Registered' },
+    { id: 10, name: 'Francesca Viola', email: 'f.viola@example.com', trip: 'Ski Trip to Aspen', group: 'Milano', status: 'Registered' },
 ];
-
 
 const getStatusBadge = (status: ParticipantStatus) => {
     switch (status) {
@@ -33,35 +38,43 @@ const getStatusBadge = (status: ParticipantStatus) => {
             return 'bg-green-100 text-green-800';
         case 'Invited':
             return 'bg-blue-100 text-blue-800';
+        case 'To Invite':
+            return 'bg-yellow-100 text-yellow-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
 };
 
-const uniqueTrips = ['All Trips', ...Array.from(new Set(participants.map(p => p.trip)))];
-const allStatuses: ParticipantStatus[] = ['Registered', 'Invited'];
+// --- Detail Component: List of Participants for a specific Trip ---
 
-const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder }) => {
+interface TripParticipantsViewProps {
+    tripName: string;
+    participants: Participant[];
+    onBack: () => void;
+    onSendReminder: (count: number, onSent: () => void) => void;
+    onSendInvite: (tripName: string, count: number) => void;
+}
+
+const TripParticipantsView: React.FC<TripParticipantsViewProps> = ({ tripName, participants, onBack, onSendReminder, onSendInvite }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState<{ key: keyof Participant; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
-    const [tripFilter, setTripFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState<ParticipantStatus | 'all'>('all');
     const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
+    const [sortConfig, setSortConfig] = useState<{ key: keyof Participant; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
 
-    const headerCheckboxRef = React.useRef<HTMLInputElement>(null);
+    const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
-    const filteredAndSortedParticipants = useMemo(() => {
-        let sortableItems = [...participants]
-            .filter(p => tripFilter === 'all' || p.trip === tripFilter)
+    // Filter and Sort
+    const filteredParticipants = useMemo(() => {
+        let filtered = [...participants]
             .filter(p => statusFilter === 'all' || p.status === statusFilter)
             .filter(p =>
                 p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.trip.toLowerCase().includes(searchTerm.toLowerCase())
+                p.group.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
         if (sortConfig !== null) {
-            sortableItems.sort((a, b) => {
+            filtered.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
                 }
@@ -71,17 +84,17 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
                 return 0;
             });
         }
-        return sortableItems;
-    }, [searchTerm, sortConfig, tripFilter, statusFilter]);
+        return filtered;
+    }, [participants, searchTerm, statusFilter, sortConfig]);
 
     useEffect(() => {
         if (headerCheckboxRef.current) {
-            const numVisible = filteredAndSortedParticipants.length;
+            const numVisible = filteredParticipants.length;
             const numSelected = selectedParticipants.length;
             headerCheckboxRef.current.checked = numSelected === numVisible && numVisible > 0;
             headerCheckboxRef.current.indeterminate = numSelected > 0 && numSelected < numVisible;
         }
-    }, [selectedParticipants, filteredAndSortedParticipants]);
+    }, [selectedParticipants, filteredParticipants]);
 
     const requestSort = (key: keyof Participant) => {
         let direction: 'ascending' | 'descending' = 'ascending';
@@ -95,12 +108,12 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
         if (!sortConfig || sortConfig.key !== name) {
             return <span className="inline-block w-4 h-4"></span>;
         }
-        return sortConfig.direction === 'ascending' ? <ArrowUpIcon /> : <ArrowDownIcon />;
+        return sortConfig.direction === 'ascending' ? <ArrowUpIcon className="w-4 h-4 inline-block ml-1" /> : <ArrowDownIcon className="w-4 h-4 inline-block ml-1" />;
     };
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedParticipants(filteredAndSortedParticipants.map(p => p.id));
+            setSelectedParticipants(filteredParticipants.map(p => p.id));
         } else {
             setSelectedParticipants([]);
         }
@@ -112,165 +125,143 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
         );
     };
 
-    const canSendReminder = useMemo(() => {
-        const selectedObjs = participants.filter(p => selectedParticipants.includes(p.id));
-        return selectedObjs.some(p => p.status !== 'Registered');
-    }, [selectedParticipants]);
+    const handleExport = () => {
+        const headers = ['ID', 'Name', 'Email', 'Trip', 'Group', 'Status'];
+        const csvRows = [headers.join(',')];
+        filteredParticipants.forEach(p => {
+            const row = [p.id, p.name, p.email, p.trip, p.group, p.status].map(val => `"${val}"`).join(',');
+            csvRows.push(row);
+        });
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${tripName.replace(/\s+/g, '_')}_participants.csv`;
+        link.click();
+    };
 
-    const handleOpenReminderModal = () => {
-        if (selectedParticipants.length > 0) {
-            // Filter out participants who are already Registered
+    const primaryAction = useMemo(() => {
+        const selectedObjs = participants.filter(p => selectedParticipants.includes(p.id));
+        if (selectedObjs.length === 0) return null;
+
+        // Logic:
+        // 1. If ANY selected is "To Invite" -> Show "Send Invite"
+        // 2. If NO "To Invite" but HAS "Invited" -> Show "Send Reminder"
+        // 3. Else (e.g. only Registered) -> No main action (or could be something else)
+
+        const hasToInvite = selectedObjs.some(p => p.status === 'To Invite');
+        if (hasToInvite) {
+            return {
+                type: 'invite',
+                label: `Send Invite (${selectedParticipants.length})`,
+                bg: 'bg-blue-600 hover:bg-blue-700'
+            };
+        }
+
+        const hasInvited = selectedObjs.some(p => p.status === 'Invited');
+        if (hasInvited) {
+            return {
+                type: 'remind',
+                label: `Send Reminder (${selectedParticipants.length})`,
+                bg: 'bg-blue-600 hover:bg-blue-700'
+            };
+        }
+
+        return null;
+    }, [selectedParticipants, participants]);
+
+    const executePrimaryAction = () => {
+        if (!primaryAction) return;
+
+        if (primaryAction.type === 'invite') {
+            // Send invites to all selected.
+            onSendInvite(tripName, selectedParticipants.length);
+            setSelectedParticipants([]);
+        } else if (primaryAction.type === 'remind') {
+            // Send reminders to all eligible selected (not registered).
             const selectedObjs = participants.filter(p => selectedParticipants.includes(p.id));
             const participantsToRemind = selectedObjs.filter(p => p.status !== 'Registered');
 
             if (participantsToRemind.length === 0) {
-                alert('Tutti i partecipanti selezionati risultano già registrati. Non è necessario inviare reminder.');
+                alert('All selected participants are already registered.');
                 return;
             }
-
-            // Send reminder only to the count of participants who need it
             onSendReminder(participantsToRemind.length, () => setSelectedParticipants([]));
         }
     };
 
-    const handleExport = () => {
-        const participantsToExport = filteredAndSortedParticipants;
-        if (participantsToExport.length === 0) {
-            alert('No participants to export.');
-            return;
-        }
-
-        const headers = ['ID', 'Name', 'Email', 'Trip', 'Group', 'Status'];
-        const csvRows = [headers.join(',')];
-
-        const escapeCsvCell = (cellData: string) => {
-            if (/[",\n]/.test(cellData)) {
-                return `"${cellData.replace(/"/g, '""')}"`;
-            }
-            return cellData;
-        };
-
-        participantsToExport.forEach(p => {
-            const row = [
-                p.id,
-                p.name,
-                p.email,
-                p.trip,
-                p.group,
-                p.status,
-            ].map(String).map(escapeCsvCell).join(',');
-            csvRows.push(row);
-        });
-
-        const csvString = csvRows.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'participants.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
-
     return (
-        <div className="p-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Manage Participants</h1>
-                <p className="text-gray-500 mt-1">View, add, and manage participants for all trips.</p>
+        <div className="animate-fade-in">
+            <div className="flex items-center mb-6">
+                <button 
+                    onClick={onBack} 
+                    className="mr-4 p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-600"
+                >
+                    <ChevronDownIcon className="w-6 h-6 transform rotate-90" />
+                </button>
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">{tripName}</h2>
+                    <p className="text-sm text-gray-500">Managing participants list</p>
+                </div>
             </div>
 
-            <div className="mb-8">
-                {selectedParticipants.length > 0 ? (
-                    <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold text-gray-700">{selectedParticipants.length} partecipante/i selezionato/i</span>
-                         <div className="flex items-center space-x-4">
-                            {canSendReminder && (
-                                <button 
-                                    onClick={handleOpenReminderModal}
-                                    className="bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                    Invia Reminder
-                                </button>
-                            )}
-                            <button 
-                                onClick={() => setSelectedParticipants([])}
-                                className="bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg hover:bg-gray-300 transition-colors">
-                                Annulla
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center space-x-4">
-                            <div className="relative">
-                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                 <div className="p-6 border-b border-gray-200 bg-gray-50/50">
+                    {/* Toolbar */}
+                    <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+                            <div className="relative flex-1 max-w-md">
+                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search by name, email.."
+                                    placeholder="Search participants..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 w-72 border rounded-lg bg-white text-gray-900 placeholder-gray-500 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                    className="pl-9 pr-4 py-2 w-full border rounded-lg bg-white text-sm text-gray-900 placeholder-gray-500 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                 />
                             </div>
-                            <div className="relative">
-                                <select
-                                    value={tripFilter}
-                                    onChange={(e) => setTripFilter(e.target.value)}
-                                    className="w-48 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
-                                >
-                                    {uniqueTrips.map(trip => (
-                                        <option key={trip} value={trip === 'All Trips' ? 'all' : trip}>
-                                            {trip}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            </div>
-                            <div className="relative">
+                            <div className="relative w-44">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value as ParticipantStatus | 'all')}
-                                    className="w-48 border border-gray-300 rounded-lg py-2 px-4 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
+                                    className="w-full border border-gray-300 rounded-lg py-2 pl-3 pr-8 text-sm text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
                                 >
                                     <option value="all">All Statuses</option>
-                                    {allStatuses.map(status => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
+                                    <option value="Registered">Registered</option>
+                                    <option value="Invited">Invited</option>
+                                    <option value="To Invite">To Invite</option>
                                 </select>
-                                <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <ChevronDownIcon className="w-4 h-4 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <button className="bg-white text-gray-700 font-semibold px-5 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center border border-gray-300">
-                                <UploadIcon className="w-5 h-5 mr-2" />
-                                Import
+
+                        <div className="flex items-center gap-2">
+                             {selectedParticipants.length > 0 && primaryAction && (
+                                <button 
+                                    onClick={executePrimaryAction}
+                                    className={`${primaryAction.bg} text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm`}>
+                                    {primaryAction.label}
+                                </button>
+                            )}
+                             <button onClick={() => { /* Logic for single add */ }} className="bg-blue-600 text-white text-sm font-semibold px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center">
+                                <PlusIcon className="w-4 h-4 mr-2" /> Add New
                             </button>
-                            <button 
-                                onClick={handleExport}
-                                className="bg-white text-gray-700 font-semibold px-5 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center border border-gray-300">
-                                <DownloadIcon className="w-5 h-5 mr-2" />
-                                Export
+                            <button className="bg-white text-gray-700 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-300 flex items-center shadow-sm">
+                                <UploadIcon className="w-4 h-4 mr-2" /> Import
                             </button>
-                            <button className="bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                Add Participant
+                            <button onClick={handleExport} className="bg-white text-gray-700 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-300 flex items-center shadow-sm">
+                                <DownloadIcon className="w-4 h-4 mr-2" /> Export
                             </button>
                         </div>
                     </div>
-                )}
-            </div>
+                 </div>
 
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left text-gray-500">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th scope="col" className="px-6 py-4 w-12">
+                                <th scope="col" className="px-6 py-4 w-10">
                                     <input 
                                         type="checkbox"
                                         ref={headerCheckboxRef}
@@ -279,73 +270,219 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
                                     />
                                 </th>
                                 <th scope="col" className="px-6 py-4">
-                                    <button onClick={() => requestSort('name')} className="flex items-center hover:text-gray-900">
+                                    <button onClick={() => requestSort('name')} className="flex items-center hover:text-gray-900 font-bold">
                                         Participant {getSortIcon('name')}
                                     </button>
                                 </th>
                                 <th scope="col" className="px-6 py-4">
-                                    <button onClick={() => requestSort('trip')} className="flex items-center hover:text-gray-900">
-                                        Trip {getSortIcon('trip')}
-                                    </button>
-                                </th>
-                                <th scope="col" className="px-6 py-4">
-                                    <button onClick={() => requestSort('group')} className="flex items-center hover:text-gray-900">
+                                    <button onClick={() => requestSort('group')} className="flex items-center hover:text-gray-900 font-bold">
                                         Group {getSortIcon('group')}
                                     </button>
                                 </th>
                                 <th scope="col" className="px-6 py-4">
-                                    <button onClick={() => requestSort('status')} className="flex items-center hover:text-gray-900">
+                                    <button onClick={() => requestSort('status')} className="flex items-center hover:text-gray-900 font-bold">
                                         Status {getSortIcon('status')}
                                     </button>
                                 </th>
-                                <th scope="col" className="px-6 py-4 text-right">ACTIONS</th>
+                                <th scope="col" className="px-6 py-4 text-right font-bold">ACTIONS</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAndSortedParticipants.map((participant) => (
-                                <tr key={participant.id} className={`bg-white border-b last:border-b-0 hover:bg-gray-50 ${selectedParticipants.includes(participant.id) ? 'bg-blue-50' : ''}`}>
-                                    <td className="px-6 py-4">
-                                        <input 
-                                            type="checkbox"
-                                            checked={selectedParticipants.includes(participant.id)}
-                                            onChange={() => handleSelectOne(participant.id)}
-                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        />
-                                    </td>
-                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3">
-                                                {participant.name.charAt(0)}
+                            {filteredParticipants.length > 0 ? (
+                                filteredParticipants.map((participant) => (
+                                    <tr key={participant.id} className={`bg-white border-b last:border-b-0 hover:bg-gray-50 transition-colors ${selectedParticipants.includes(participant.id) ? 'bg-blue-50' : ''}`}>
+                                        <td className="px-6 py-4">
+                                            <input 
+                                                type="checkbox"
+                                                checked={selectedParticipants.includes(participant.id)}
+                                                onChange={() => handleSelectOne(participant.id)}
+                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            />
+                                        </td>
+                                        <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3 text-sm">
+                                                    {participant.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-gray-900">{participant.name}</div>
+                                                    <div className="text-xs text-gray-500 font-normal">{participant.email}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="text-base font-semibold">{participant.name}</div>
-                                                <div className="text-sm text-gray-500 font-normal">{participant.email}</div>
+                                        </th>
+                                        <td className="px-6 py-4 text-gray-600">{participant.group}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusBadge(participant.status)}`}>
+                                                {participant.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end space-x-2">
+                                                <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full transition-colors hover:bg-gray-100" aria-label="Edit participant">
+                                                    <PencilIcon className="w-4 h-4" />
+                                                </button>
+                                                <button className="p-1.5 text-gray-400 hover:text-red-600 rounded-full transition-colors hover:bg-red-50" aria-label="Delete participant">
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                        </div>
-                                    </th>
-                                    <td className="px-6 py-4">{participant.trip}</td>
-                                    <td className="px-6 py-4">{participant.group}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusBadge(participant.status)}`}>
-                                            {participant.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-end space-x-3">
-                                            <button className="p-1.5 text-gray-500 hover:text-gray-700 rounded-md transition-colors hover:bg-gray-100" aria-label="Edit participant">
-                                                <PencilIcon className="w-4 h-4" />
-                                            </button>
-                                            <button className="p-1.5 text-red-500 hover:text-red-700 rounded-md transition-colors hover:bg-red-100" aria-label="Delete participant">
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        No participants found matching your search for this trip.
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
+    );
+};
+
+
+// --- Main View: List of Trips ---
+
+interface TripSummary {
+    name: string;
+    totalParticipants: number;
+    registeredCount: number;
+    groups: number;
+}
+
+interface TripListViewProps {
+    onSelectTrip: (tripName: string) => void;
+}
+
+const TripListView: React.FC<TripListViewProps> = ({ onSelectTrip }) => {
+    // Aggregate data to get trip summaries
+    const tripSummaries = useMemo(() => {
+        const summaries: Record<string, TripSummary> = {};
+        participantsData.forEach(p => {
+            if (!summaries[p.trip]) {
+                summaries[p.trip] = { name: p.trip, totalParticipants: 0, registeredCount: 0, groups: 0 };
+            }
+            summaries[p.trip].totalParticipants += 1;
+            if (p.status === 'Registered') {
+                summaries[p.trip].registeredCount += 1;
+            }
+        });
+        // Simple way to count unique groups per trip
+        Object.keys(summaries).forEach(tripName => {
+            const groups = new Set(participantsData.filter(p => p.trip === tripName).map(p => p.group));
+            summaries[tripName].groups = groups.size;
+        });
+
+        return Object.values(summaries);
+    }, []);
+
+    return (
+        <div className="animate-fade-in">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-800">Manage Participants</h1>
+                <p className="text-gray-500 mt-1">Select a trip to view and manage its participants.</p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <table className="w-full text-sm text-left text-gray-500">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th scope="col" className="px-6 py-4">Trip Name</th>
+                            <th scope="col" className="px-6 py-4">Total Participants</th>
+                            <th scope="col" className="px-6 py-4">Registration Status</th>
+                            <th scope="col" className="px-6 py-4">Groups</th>
+                            <th scope="col" className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tripSummaries.map((trip) => (
+                            <tr 
+                                key={trip.name} 
+                                className="bg-white border-b last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                                onClick={() => onSelectTrip(trip.name)}
+                            >
+                                <th scope="row" className="px-6 py-5 font-medium text-gray-900 whitespace-nowrap text-base">
+                                    {trip.name}
+                                </th>
+                                <td className="px-6 py-5">
+                                    <div className="flex items-center">
+                                        <UsersIcon className="w-4 h-4 mr-2 text-gray-400" />
+                                        <span className="font-semibold text-gray-700">{trip.totalParticipants}</span>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-5">
+                                    <div className="w-full max-w-xs">
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-xs font-medium text-blue-700">{trip.registeredCount} Registered</span>
+                                            <span className="text-xs font-medium text-gray-500">{Math.round((trip.registeredCount / trip.totalParticipants) * 100)}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                                style={{ width: `${(trip.registeredCount / trip.totalParticipants) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-5">
+                                    <span className="bg-gray-100 text-gray-700 py-1 px-3 rounded-full text-xs font-medium">
+                                        {trip.groups} Groups
+                                    </span>
+                                </td>
+                                <td className="px-6 py-5 text-right">
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onSelectTrip(trip.name);
+                                        }}
+                                        className="text-blue-600 hover:text-blue-900 font-medium text-sm px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                    >
+                                        Manage Participants
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+
+// --- Main Component ---
+
+const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder, onSendInvite }) => {
+    const [selectedTrip, setSelectedTrip] = useState<string | null>(null);
+
+    const handleSelectTrip = (tripName: string) => {
+        setSelectedTrip(tripName);
+    };
+
+    const handleBack = () => {
+        setSelectedTrip(null);
+    };
+
+    const activeTripParticipants = useMemo(() => {
+        return selectedTrip ? participantsData.filter(p => p.trip === selectedTrip) : [];
+    }, [selectedTrip]);
+
+    return (
+        <div className="p-8 bg-gray-50 min-h-full">
+            {selectedTrip ? (
+                <TripParticipantsView 
+                    tripName={selectedTrip} 
+                    participants={activeTripParticipants} 
+                    onBack={handleBack} 
+                    onSendReminder={onSendReminder}
+                    onSendInvite={onSendInvite}
+                />
+            ) : (
+                <TripListView onSelectTrip={handleSelectTrip} />
+            )}
         </div>
     );
 };

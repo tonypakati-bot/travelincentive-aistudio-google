@@ -12,7 +12,8 @@ import {
     CommunicationIcon,
     ReportIcon,
     FormIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
+    MailIcon
 } from './icons';
 
 interface SidebarProps {
@@ -50,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
         { key: 'manage-trip', icon: <CreationIcon className="w-5 h-5"/>, label: 'Manage Trip' },
         { key: 'manage-contacts', icon: <ContactsIcon className="w-5 h-5"/>, label: 'Manage Contacts' },
         { key: 'manage-participants', icon: <UsersIcon className="w-5 h-5"/>, label: 'Manage Participants' },
+        { key: 'invites', icon: <MailIcon className="w-5 h-5"/>, label: 'Invites' },
         { key: 'forms', icon: <FormIcon className="w-5 h-5"/>, label: 'Forms' },
         { key: 'communications', icon: <CommunicationIcon className="w-5 h-5"/>, label: 'Communications' },
         { key: 'useful-informations', icon: <InformationCircleIcon className="w-5 h-5"/>, label: 'Useful Informations' },

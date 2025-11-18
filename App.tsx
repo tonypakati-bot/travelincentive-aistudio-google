@@ -16,6 +16,7 @@ import SendReminderModal from './components/SendReminderModal';
 import SendInvitesModal from './components/SendInvitesModal';
 import Documents from './components/Documents';
 import UsefulInformations, { initialInformations, UsefulInfoEntry } from './components/UsefulInformations';
+import Invites, { initialInvites, Invite } from './components/Invites';
 import { Contact } from './components/AddContactModal';
 
 const initialContacts: Contact[] = [
@@ -42,12 +43,13 @@ const App: React.FC = () => {
   const [onReminderSentCallback, setOnReminderSentCallback] = useState<(() => void) | null>(null);
 
   const [isInvitesModalOpen, setIsInvitesModalOpen] = useState(false);
-  const [invitesModalData, setInvitesModalData] = useState<{ tripName: string; inviteeCount: number } | null>(null);
+  const [invitesModalData, setInvitesModalData] = useState<{ tripName: string; inviteeCount: number; emailBody?: string } | null>(null);
   
   const [usefulInformations, setUsefulInformations] = useState<UsefulInfoEntry[]>(initialInformations);
   const [termsDocuments, setTermsDocuments] = useState<TermsDocument[]>(initialDocuments);
   const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   const [forms, setForms] = useState<Form[]>(initialForms);
+  const [invitesTemplates, setInvitesTemplates] = useState<Invite[]>(initialInvites);
 
 
   // Trip form handlers
@@ -82,6 +84,20 @@ const App: React.FC = () => {
     setFormFormMode('hidden');
   };
 
+  // Invites handlers
+  const handleSaveInvite = (invite: Invite) => {
+      setInvitesTemplates(prev => {
+          const exists = prev.find(i => i.id === invite.id);
+          if (exists) {
+              return prev.map(i => i.id === invite.id ? invite : i);
+          }
+          return [invite, ...prev];
+      });
+  };
+  const handleDeleteInvite = (id: number) => {
+      setInvitesTemplates(prev => prev.filter(i => i.id !== id));
+  };
+
   // Reminder modal handlers
   const handleOpenReminderModal = (count: number, onSent?: () => void) => {
     setReminderParticipantCount(count);
@@ -107,7 +123,12 @@ const App: React.FC = () => {
 
   // Invites modal handlers
   const handleOpenInvitesModal = (tripName: string, inviteeCount: number) => {
-    setInvitesModalData({ tripName, inviteeCount });
+    const template = invitesTemplates.find(i => i.tripName === tripName);
+    setInvitesModalData({ 
+        tripName, 
+        inviteeCount, 
+        emailBody: template ? template.body : undefined 
+    });
     setIsInvitesModalOpen(true);
   };
 
@@ -153,7 +174,9 @@ const App: React.FC = () => {
       case 'manage-contacts':
         return <ManageContacts contacts={contacts} setContacts={setContacts} />;
       case 'manage-participants':
-        return <ManageParticipants onSendReminder={handleOpenReminderModal} />;
+        return <ManageParticipants onSendReminder={handleOpenReminderModal} onSendInvite={handleOpenInvitesModal} />;
+      case 'invites':
+        return <Invites invites={invitesTemplates} onSave={handleSaveInvite} onDelete={handleDeleteInvite} />;
       case 'communications':
         return <Communications onCreateCommunication={handleCreateCommunication} />;
       case 'useful-informations':
@@ -191,6 +214,7 @@ const App: React.FC = () => {
         onSend={handleConfirmSendInvites}
         tripName={invitesModalData?.tripName || ''}
         inviteeCount={invitesModalData?.inviteeCount || 0}
+        initialBody={invitesModalData?.emailBody}
       />
     </div>
   );

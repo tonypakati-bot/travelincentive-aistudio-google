@@ -268,6 +268,18 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                     title="Sezione 1: Informazioni Base del Viaggio"
                     isOpen={openSections.includes(1)}
                     onClick={() => handleToggleSection(1)}
+                    actions={
+                        <button 
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!openSections.includes(1)) handleToggleSection(1);
+                            }}
+                            className="text-sm font-semibold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center"
+                        >
+                            <PencilIcon className="w-4 h-4 mr-1.5" /> Modifica
+                        </button>
+                    }
                 >
                     <div className="space-y-6">
                         <FormField label="Nome Cliente" required>
