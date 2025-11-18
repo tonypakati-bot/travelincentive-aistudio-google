@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -11,7 +10,7 @@ import CreateForm from './components/CreateForm';
 import ManageParticipants from './components/ManageParticipants';
 import ManageContacts from './components/ManageContacts';
 import Reports from './components/Reports';
-import PrivacyPolicy, { initialPrivacyDocuments, PrivacyDocument } from './components/PrivacyPolicy';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsConditions, { initialDocuments, TermsDocument } from './components/TermsConditions';
 import SendReminderModal from './components/SendReminderModal';
 import SendInvitesModal from './components/SendInvitesModal';
@@ -48,7 +47,6 @@ const App: React.FC = () => {
   
   const [usefulInformations, setUsefulInformations] = useState<UsefulInfoEntry[]>(initialInformations);
   const [termsDocuments, setTermsDocuments] = useState<TermsDocument[]>(initialDocuments);
-  const [privacyDocuments, setPrivacyDocuments] = useState<PrivacyDocument[]>(initialPrivacyDocuments);
   const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   const [forms, setForms] = useState<Form[]>(initialForms);
   const [invitesTemplates, setInvitesTemplates] = useState<Invite[]>(initialInvites);
@@ -157,7 +155,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (tripFormMode !== 'hidden') {
-      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} usefulInformations={usefulInformations} termsDocuments={termsDocuments} privacyDocuments={privacyDocuments} contacts={contacts} forms={forms} />;
+      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} usefulInformations={usefulInformations} termsDocuments={termsDocuments} contacts={contacts} forms={forms} />;
     }
 
     if (isCommFormVisible) {
@@ -186,7 +184,7 @@ const App: React.FC = () => {
       case 'forms':
         return <Forms onCreateForm={handleCreateForm} forms={forms} />;
       case 'privacy-policy':
-        return <PrivacyPolicy documents={privacyDocuments} setDocuments={setPrivacyDocuments} />;
+        return <PrivacyPolicy />;
       case 'terms-conditions':
         return <TermsConditions documents={termsDocuments} setDocuments={setTermsDocuments} />;
       case 'documents':

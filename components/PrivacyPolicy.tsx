@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, XIcon } from './icons';
 
@@ -20,7 +19,7 @@ IMMAGINI E VIDEO DURANTE EVENTI ESCLUSIVI
 Durante il "White Party" e le attività in catamarano, verranno effettuate riprese video professionali. La partecipazione a tali eventi implica il consenso esplicito all'utilizzo di tale materiale per video aziendali interni.`;
 
 // Type definition
-export type PrivacyDocument = {
+type PrivacyDocument = {
     id: number;
     title: string;
     trip: string | null; // null for global
@@ -36,7 +35,7 @@ const createInitialHtml = (text: string): string => {
     return textWithLink.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
-export const initialPrivacyDocuments: PrivacyDocument[] = [
+const initialPrivacyDocuments: PrivacyDocument[] = [
     {
         id: 1,
         title: 'Global Privacy Policy',
@@ -80,7 +79,7 @@ const Toolbar: React.FC<{ editorRef: React.RefObject<HTMLDivElement> }> = ({ edi
             <FormatButton command="underline" title="Underline" applyFormat={applyFormat}><u className="underline w-5 text-center">U</u></FormatButton>
             <span className="w-px h-5 bg-gray-300 mx-2"></span>
             <FormatButton command="insertUnorderedList" title="Bulleted List" applyFormat={applyFormat}>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
             </FormatButton>
              <FormatButton command="insertOrderedList" title="Numbered List" applyFormat={applyFormat}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 00-1 1v1.333H5.333a1 1 0 100 1.334h3.667v1.333H5.333a1 1 0 100 1.334h3.667v1.333H5.333a1 1 0 100 1.334H9V16a1 1 0 102 0v-1.333h3.667a1 1 0 100-1.334h-3.667v-1.333h3.667a1 1 0 100-1.334h-3.667V8.667h3.667a1 1 0 100-1.334H11V4a1 1 0 00-1-1z" clipRule="evenodd" fillRule="evenodd"></path></svg>
@@ -212,12 +211,8 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ documentToEdit, onClose, on
 
 // --- Main Component ---
 
-interface PrivacyPolicyProps {
-    documents: PrivacyDocument[];
-    setDocuments: React.Dispatch<React.SetStateAction<PrivacyDocument[]>>;
-}
-
-const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ documents, setDocuments }) => {
+const PrivacyPolicy: React.FC = () => {
+    const [documents, setDocuments] = useState<PrivacyDocument[]>(initialPrivacyDocuments);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<PrivacyDocument | null>(null);
 

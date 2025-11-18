@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { SearchIcon, PencilIcon, TrashIcon } from './icons';
+import { SearchIcon, PencilIcon } from './icons';
 
 export type Form = {
     id: number;
@@ -66,9 +65,6 @@ const Forms: React.FC<FormsProps> = ({ onCreateForm, forms }) => {
                                     </button>
                                     <button className="p-1.5 text-gray-500 hover:text-gray-700 rounded-md transition-colors hover:bg-gray-100" aria-label="Edit form">
                                         <PencilIcon className="w-4 h-4" />
-                                    </button>
-                                    <button className="p-1.5 text-red-500 hover:text-red-700 rounded-md transition-colors hover:bg-red-100" aria-label="Delete form">
-                                        <TrashIcon className="w-4 h-4" />
                                     </button>
                                 </div>
                             </td>
