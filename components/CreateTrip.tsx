@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon, FormIcon } from './icons';
 import { UsefulInfoEntry } from './UsefulInformations';
 import { TermsDocument } from './TermsConditions';
+import { PrivacyDocument } from './PrivacyPolicy';
 import { Contact } from './AddContactModal';
 import { Form } from './Forms';
 
@@ -11,6 +12,7 @@ interface CreateTripProps {
     isEditing?: boolean;
     usefulInformations: UsefulInfoEntry[];
     termsDocuments: TermsDocument[];
+    privacyDocuments: PrivacyDocument[];
     contacts: Contact[];
     forms: Form[];
 }
@@ -202,7 +204,7 @@ const ImageUrlInput: React.FC<{
     );
 };
 
-const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments, contacts, forms }) => {
+const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments, privacyDocuments, contacts, forms }) => {
     const [openSections, setOpenSections] = useState<number[]>([1]);
     const [activeFlightTab, setActiveFlightTab] = useState('andata');
     const [allowCompanion, setAllowCompanion] = useState<'yes' | 'no'>('no');
@@ -314,7 +316,7 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                 </div>
                             </FormField>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField label="Useful Informations">
                                 <div className="relative">
                                     <InformationCircleIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
@@ -325,6 +327,21 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                         <option value="" disabled>-- Seleziona --</option>
                                         {usefulInformations.map(info => (
                                             <option key={info.id} value={info.destinationName}>{info.destinationName}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                </div>
+                            </FormField>
+                            <FormField label="Privacy Policy">
+                                <div className="relative">
+                                    <DocumentIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                    <select
+                                        defaultValue=""
+                                        className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
+                                    >
+                                        <option value="" disabled>-- Seleziona --</option>
+                                        {privacyDocuments.map(doc => (
+                                            <option key={doc.id} value={doc.id}>{doc.title}</option>
                                         ))}
                                     </select>
                                     <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>

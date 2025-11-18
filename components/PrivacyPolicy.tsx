@@ -19,7 +19,7 @@ IMMAGINI E VIDEO DURANTE EVENTI ESCLUSIVI
 Durante il "White Party" e le attività in catamarano, verranno effettuate riprese video professionali. La partecipazione a tali eventi implica il consenso esplicito all'utilizzo di tale materiale per video aziendali interni.`;
 
 // Type definition
-type PrivacyDocument = {
+export type PrivacyDocument = {
     id: number;
     title: string;
     trip: string | null; // null for global
@@ -35,7 +35,7 @@ const createInitialHtml = (text: string): string => {
     return textWithLink.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br />')}</p>`).join('');
 };
 
-const initialPrivacyDocuments: PrivacyDocument[] = [
+export const initialPrivacyDocuments: PrivacyDocument[] = [
     {
         id: 1,
         title: 'Global Privacy Policy',
@@ -211,8 +211,12 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ documentToEdit, onClose, on
 
 // --- Main Component ---
 
-const PrivacyPolicy: React.FC = () => {
-    const [documents, setDocuments] = useState<PrivacyDocument[]>(initialPrivacyDocuments);
+interface PrivacyPolicyProps {
+    documents: PrivacyDocument[];
+    setDocuments: React.Dispatch<React.SetStateAction<PrivacyDocument[]>>;
+}
+
+const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ documents, setDocuments }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<PrivacyDocument | null>(null);
 
