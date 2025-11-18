@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon, FormIcon } from './icons';
 import { UsefulInfoEntry } from './UsefulInformations';
 import { TermsDocument } from './TermsConditions';
+import { PrivacyDocument } from './PrivacyPolicy';
 import { Contact } from './AddContactModal';
 import { Form } from './Forms';
 
@@ -11,6 +13,7 @@ interface CreateTripProps {
     isEditing?: boolean;
     usefulInformations: UsefulInfoEntry[];
     termsDocuments: TermsDocument[];
+    privacyDocuments: PrivacyDocument[];
     contacts: Contact[];
     forms: Form[];
 }
@@ -202,7 +205,7 @@ const ImageUrlInput: React.FC<{
     );
 };
 
-const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments, contacts, forms }) => {
+const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments, privacyDocuments, contacts, forms }) => {
     const [openSections, setOpenSections] = useState<number[]>([1]);
     const [activeFlightTab, setActiveFlightTab] = useState('andata');
     const [allowCompanion, setAllowCompanion] = useState<'yes' | 'no'>('no');
@@ -314,7 +317,7 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                 </div>
                             </FormField>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <FormField label="Useful Informations">
                                 <div className="relative">
                                     <InformationCircleIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
@@ -325,6 +328,21 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                         <option value="" disabled>-- Seleziona --</option>
                                         {usefulInformations.map(info => (
                                             <option key={info.id} value={info.destinationName}>{info.destinationName}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                </div>
+                            </FormField>
+                             <FormField label="Privacy Policy">
+                                <div className="relative">
+                                    <DocumentIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                    <select
+                                        defaultValue=""
+                                        className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
+                                    >
+                                        <option value="" disabled>-- Seleziona --</option>
+                                        {privacyDocuments.map(doc => (
+                                            <option key={doc.id} value={doc.title}>{doc.title}</option>
                                         ))}
                                     </select>
                                     <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
@@ -523,87 +541,105 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                                     </div>
                                                 </FormField>
                                                 <FormField label="Compagnia Aerea">
-                                                    <Input placeholder="e.g. Etihad Airways" />
+                                                    <Input placeholder="e.g. Emirates" />
                                                 </FormField>
-                                                <FormField label="Numero Volo">
-                                                    <Input placeholder="e.g. EY 82" />
+                                                <FormField label="Codice Volo">
+                                                    <Input placeholder="e.g. EK206" />
                                                 </FormField>
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 items-end">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                                                 <FormField label="Aeroporto Partenza">
-                                                    <Input placeholder="e.g. Malpensa" />
+                                                    <Input placeholder="e.g. MXP" />
                                                 </FormField>
-                                                <FormField label="Aeroporto Arrivo">
-                                                    <Input placeholder="e.g. Abu Dhabi" />
+                                                <FormField label="Orario Partenza">
+                                                    <Input type="time" />
                                                 </FormField>
                                                 <FormField label="Data Partenza">
-                                                    <Input placeholder="gg/mm/aaaa" />
-                                                </FormField>
-                                                <FormField label="Ora Partenza">
-                                                    <Input placeholder="--:--" />
-                                                </FormField>
-                                                <FormField label="Ora Arrivo">
-                                                    <Input placeholder="--:--" />
+                                                    <Input type="date" />
                                                 </FormField>
                                             </div>
-                                            <div className="absolute top-3 right-3">
-                                                <IconButton icon={<TrashIcon className="w-5 h-5"/>} />
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <FormField label="Aeroporto Arrivo">
+                                                    <Input placeholder="e.g. DXB" />
+                                                </FormField>
+                                                <FormField label="Orario Arrivo">
+                                                    <Input type="time" />
+                                                </FormField>
+                                                <FormField label="Data Arrivo">
+                                                    <Input type="date" />
+                                                </FormField>
                                             </div>
+                                            <button className="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div className="mt-4">
-                                       <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
-                                            <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Volo di Andata
+                                        <button className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex justify-center items-center">
+                                            <PlusIcon className="w-5 h-5 mr-2" /> Aggiungi Volo
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <div>
                                     <FormField label="Titolo (Voli di Ritorno)" className="mb-6">
-                                        <Input placeholder="e.g. Voli Ritorno Gruppo Milano" />
+                                        <Input placeholder="e.g. Rientro in Italia" />
                                     </FormField>
                                     <FormField label="Note Importanti (Voli di Ritorno)" className="mb-6">
                                         <Textarea 
-                                            rows={2}
-                                            defaultValue="Il trasferimento per l'aeroporto partirà dall'hotel 4 ore prima dell'orario di partenza del volo."
+                                            rows={2} 
+                                            defaultValue="Si ricorda di effettuare il check-out in hotel entro le ore 10:00."
                                             placeholder="Aggiungi note o informazioni importanti per i voli di ritorno."
                                         />
                                     </FormField>
                                     <div className="space-y-4">
-                                        <div className="relative p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                                <FormField label="Compagnia Aerea">
-                                                    <Input placeholder="e.g. Etihad Airways" />
+                                         <div className="relative p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                                <FormField label="Gruppo Ritorno">
+                                                    <div className="relative">
+                                                        <select defaultValue="" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
+                                                            <option value="" disabled>-- Seleziona Gruppo --</option>
+                                                            <option>Milano</option>
+                                                            <option>Roma</option>
+                                                            <option>Venezia</option>
+                                                            <option>Vip</option>
+                                                        </select>
+                                                        <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                                    </div>
                                                 </FormField>
-                                                <FormField label="Numero Volo">
-                                                    <Input placeholder="e.g. EY 83" />
+                                                <FormField label="Compagnia Aerea">
+                                                    <Input placeholder="e.g. Emirates" />
+                                                </FormField>
+                                                <FormField label="Codice Volo">
+                                                    <Input placeholder="e.g. EK205" />
                                                 </FormField>
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 items-end">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                                                 <FormField label="Aeroporto Partenza">
-                                                    <Input placeholder="e.g. Abu Dhabi" />
+                                                    <Input placeholder="e.g. DXB" />
                                                 </FormField>
-                                                <FormField label="Aeroporto Arrivo">
-                                                    <Input placeholder="e.g. Malpensa" />
+                                                <FormField label="Orario Partenza">
+                                                    <Input type="time" />
                                                 </FormField>
                                                 <FormField label="Data Partenza">
-                                                    <Input placeholder="gg/mm/aaaa" />
-                                                </FormField>
-                                                <FormField label="Ora Partenza">
-                                                    <Input placeholder="--:--" />
-                                                </FormField>
-                                                <FormField label="Ora Arrivo">
-                                                    <Input placeholder="--:--" />
+                                                    <Input type="date" />
                                                 </FormField>
                                             </div>
-                                            <div className="absolute top-3 right-3">
-                                                <IconButton icon={<TrashIcon className="w-5 h-5"/>} />
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <FormField label="Aeroporto Arrivo">
+                                                    <Input placeholder="e.g. MXP" />
+                                                </FormField>
+                                                <FormField label="Orario Arrivo">
+                                                    <Input type="time" />
+                                                </FormField>
+                                                <FormField label="Data Arrivo">
+                                                    <Input type="date" />
+                                                </FormField>
                                             </div>
+                                            <button className="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
                                         </div>
-                                    </div>
-                                     <div className="mt-4">
-                                        <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
-                                            <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Volo di Ritorno
+                                        <button className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex justify-center items-center">
+                                            <PlusIcon className="w-5 h-5 mr-2" /> Aggiungi Volo
                                         </button>
                                     </div>
                                 </div>
@@ -611,268 +647,122 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                         </div>
                     </div>
                 </Section>
-                
-                {/* Sezione 3: Contatti Emergenza */}
+
+                {/* Sezione 3: Dettagli Aggiuntivi */}
                 <Section 
-                    title="Sezione 3: Contatti di Emergenza e Sicurezza" 
+                    title="Sezione 3: Dettagli Aggiuntivi (Agenda & Hotel)"
                     isOpen={openSections.includes(3)}
                     onClick={() => handleToggleSection(3)}
                 >
-                     <div className="space-y-4 mb-6">
-                        {tripContacts.map((tc, index) => (
-                            <div key={tc.id} className="relative p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <FormField label="Gruppo Partenza">
-                                        <div className="relative">
-                                            <select 
-                                                value={tc.groupId}
-                                                onChange={(e) => handleTripContactChange(tc.id, 'groupId', e.target.value)}
-                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
-                                            >
-                                                <option value="" disabled>-- Seleziona Gruppo --</option>
-                                                <option>Milano</option>
-                                                <option>Roma</option>
-                                                <option>Venezia</option>
-                                                <option>Vip</option>
-                                            </select>
-                                            <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                        </div>
-                                    </FormField>
-                                    <FormField label="Seleziona Contatto">
-                                        <div className="relative">
-                                            <select 
-                                                value={tc.contactId}
-                                                onChange={(e) => handleTripContactChange(tc.id, 'contactId', e.target.value)}
-                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
-                                            >
-                                                <option value="" disabled>-- Seleziona Contatto --</option>
-                                                {contacts.map(c => (
-                                                    <option key={c.id} value={c.id}>{c.name} ({c.category})</option>
-                                                ))}
-                                            </select>
-                                            <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                        </div>
-                                    </FormField>
+                   <div className="space-y-4">
+                        {additionalDetails.map((detail) => (
+                            <div key={detail.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50/50 relative group">
+                                <div className="flex-shrink-0 pt-1">
+                                    <DetailIconSelect 
+                                        value={detail.type} 
+                                        onChange={(newType) => handleDetailTypeChange(detail.id, newType)} 
+                                    />
                                 </div>
-                                <div className="absolute top-3 right-3">
-                                    <IconButton onClick={() => handleRemoveTripContact(tc.id)} icon={<TrashIcon className="w-5 h-5"/>} />
+                                <div className="flex-grow">
+                                    <Textarea 
+                                        rows={2} 
+                                        placeholder="Inserisci i dettagli qui..." 
+                                        value={detail.value}
+                                        onChange={(e) => handleDetailValueChange(detail.id, e.target.value)}
+                                        className="bg-white"
+                                    />
                                 </div>
+                                <button 
+                                    onClick={() => handleRemoveDetail(detail.id)}
+                                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                >
+                                    <TrashIcon className="w-5 h-5" />
+                                </button>
                             </div>
                         ))}
-                    </div>
-                    <button 
-                        onClick={handleAddTripContact}
-                        className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                        <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Contatto
-                    </button>
+                        <button 
+                            onClick={handleAddDetail}
+                            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex justify-center items-center"
+                        >
+                            <PlusIcon className="w-5 h-5 mr-2" /> Aggiungi Dettaglio
+                        </button>
+                   </div>
                 </Section>
 
-                {/* Sezione 4: Agenda */}
-                <Section 
-                    title="Sezione 4: Agenda e Eventi" 
+                 {/* Sezione 4: Contatti di Riferimento */}
+                 <Section 
+                    title="Sezione 4: Contatti di Riferimento"
                     isOpen={openSections.includes(4)}
                     onClick={() => handleToggleSection(4)}
                 >
-                    <div className="p-4 border border-gray-200 rounded-lg space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                             <FormField label="Giorno" className="md:col-span-1"><Input value="1" readOnly className="!bg-gray-100" /></FormField>
-                             <FormField label="Data" className="md:col-span-2"><Input placeholder="mm/dd/yyyy" /></FormField>
-                             <FormField label="Titolo del Giorno" className="md:col-span-3"><Input placeholder="Arrivo e Check-in" /></FormField>
-                        </div>
-                        <div className="pt-4 border-t border-gray-200">
-                            <h4 className="text-md font-semibold text-gray-800 mb-4">Eventi</h4>
-                            <div className="space-y-3">
-                                <div className="border border-gray-200 rounded-lg p-4 bg-white">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <FormField label="Orario">
-                                            <Input defaultValue="--:--" />
-                                        </FormField>
-                                        <FormField label="Titolo Evento">
-                                            <Input defaultValue="Welcome Drink" />
-                                        </FormField>
-                                        <FormField label="Categoria">
-                                            <div className="relative">
-                                                <select defaultValue="" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
-                                                    <option value="" disabled>-- Seleziona Categoria --</option>
-                                                    <option value="Activity">Activity</option>
-                                                    <option value="Hotel">Hotel</option>
-                                                    <option value="Meeting">Meeting</option>
-                                                    <option value="Restaurant">Restaurant</option>
-                                                    <option value="Travel">Travel</option>
-                                                </select>
-                                                <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                            </div>
-                                        </FormField>
-                                        <FormField label="Icona">
-                                            <IconSelect />
-                                        </FormField>
+                     <div className="space-y-4">
+                        <p className="text-sm text-gray-600 mb-4">Seleziona i contatti da mostrare nell'app per ogni gruppo.</p>
+                        {tripContacts.map((tripContact) => (
+                            <div key={tripContact.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Gruppo</label>
+                                    <div className="relative">
+                                        <select 
+                                            value={tripContact.groupId}
+                                            onChange={(e) => handleTripContactChange(tripContact.id, 'groupId', e.target.value)}
+                                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
+                                        >
+                                            <option value="" disabled>Seleziona Gruppo</option>
+                                            <option value="all">Tutti i Gruppi</option>
+                                            <option value="milano">Milano</option>
+                                            <option value="roma">Roma</option>
+                                            <option value="venezia">Venezia</option>
+                                            <option value="vip">Vip</option>
+                                        </select>
+                                        <ChevronDownIcon className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
-                                        <FormField label="Descrizione">
-                                            <Textarea rows={2} placeholder="Breve descrizione dell'evento (visibile nell'elenco principale)." />
-                                        </FormField>
-                                        <FormField label="Descrizione Lunga">
-                                            <Textarea rows={4} placeholder="Descrizione dettagliata: include informazioni utili, dress code, menù, etc." />
-                                        </FormField>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t border-gray-200">
-                                        <FormField label="Immagini Evento">
-                                            <div>
-                                                <label className="block text-sm text-gray-700 mb-1">Incolla l'URL dell'immagine</label>
-                                                <div className="relative flex items-center">
-                                                    <Input
-                                                        type="text"
-                                                        className="pr-12 w-full"
-                                                    />
-                                                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm font-medium text-gray-500 pointer-events-none">
-                                                        URL
-                                                    </span>
-                                                </div>
-                                                <button type="button" className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors mt-3">
-                                                    <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Immagine
-                                                </button>
-                                            </div>
-                                        </FormField>
-                                        <FormField label="Caption Immagini" className="mt-4">
-                                            <Input placeholder="e.g. Grande Moschea Sheikh Zayed & Louvre Abu Dhabi" defaultValue="Grande Moschea Sheikh Zayed & Louvre Abu Dhabi" />
-                                        </FormField>
-                                    </div>
-                                    <div className="mt-6 pt-4 border-t border-gray-200">
-                                        <h4 className="block text-sm font-medium text-gray-700 mb-3">Dettagli Aggiuntivi</h4>
-                                        <div className="space-y-3">
-                                            {additionalDetails.map((detail) => (
-                                                <div key={detail.id} className="flex items-center space-x-3">
-                                                    <DetailIconSelect
-                                                        value={detail.type}
-                                                        onChange={(newType) => handleDetailTypeChange(detail.id, newType)}
-                                                    />
-                                                    <Input
-                                                        className="flex-grow"
-                                                        value={detail.value}
-                                                        onChange={(e) => handleDetailValueChange(detail.id, e.target.value)}
-                                                        placeholder="Aggiungi un dettaglio..."
-                                                    />
-                                                    <IconButton
-                                                        onClick={() => handleRemoveDetail(detail.id)}
-                                                        icon={<TrashIcon className="w-5 h-5" />}
-                                                    />
-                                                </div>
+                                </div>
+                                <div className="flex-1">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Contatto</label>
+                                     <div className="relative">
+                                        <select 
+                                            value={tripContact.contactId}
+                                            onChange={(e) => handleTripContactChange(tripContact.id, 'contactId', e.target.value)}
+                                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
+                                        >
+                                            <option value="" disabled>Seleziona Contatto</option>
+                                            {contacts.map(contact => (
+                                                <option key={contact.id} value={contact.id}>{contact.name} ({contact.category})</option>
                                             ))}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleAddDetail}
-                                            className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center transition-colors">
-                                            <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Dettaglio
-                                        </button>
-                                    </div>
-                                    <div className="mt-6 pt-4 border-t border-gray-200">
-                                        <FormField label="Note Speciali (visibili solo agli admin)">
-                                            <Textarea defaultValue="Contattare il ristorante per confermare le opzioni vegetariane." />
-                                        </FormField>
+                                        </select>
+                                        <ChevronDownIcon className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
                                     </div>
                                 </div>
+                                <div className="pt-5">
+                                     <button 
+                                        onClick={() => handleRemoveTripContact(tripContact.id)}
+                                        className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                                    >
+                                        <TrashIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
-                            <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors mt-4">
-                                <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Evento
-                            </button>
-                        </div>
-                    </div>
-                     <div className="mt-4">
-                        <button className="text-sm font-semibold text-gray-600 hover:text-gray-900 flex items-center transition-colors">
-                            <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Giorno
+                        ))}
+                         <button 
+                            onClick={handleAddTripContact}
+                            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex justify-center items-center"
+                        >
+                            <PlusIcon className="w-5 h-5 mr-2" /> Aggiungi Contatto al Viaggio
                         </button>
-                    </div>
+                     </div>
                 </Section>
-                
-                {/* Sezione 5: Partecipanti */}
-                 <Section 
-                    title="Sezione 5: Gestione Partecipanti" 
-                    isOpen={openSections.includes(5)}
-                    onClick={() => handleToggleSection(5)}
-                    actions={
-                         <button className="text-sm font-semibold text-white bg-green-600 hover:bg-green-700 flex items-center px-3 py-1.5 rounded-lg transition-colors">
-                            <CheckIcon className="w-4 h-4 mr-1.5" /> Importa da Google Sheets
-                        </button>
-                    }
-                >
-                    <div className="p-4 border border-blue-300 rounded-lg">
-                        <div className="space-y-3">
-                            <div className="hidden md:grid grid-cols-5 gap-4 text-xs font-medium text-gray-500 uppercase px-3">
-                                <span>NOME</span>
-                                <span>COGNOME</span>
-                                <span>MAIL</span>
-                                <span>RUOLO</span>
-                                <span className="text-right"></span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-                                <Input value="Mario" />
-                                <Input value="Rossi" />
-                                <Input value="m.rossi@example.co" />
-                                <div className="relative">
-                                    <select defaultValue="user" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
-                                        <option value="" disabled>-- Aggiungi Ruolo --</option>
-                                        <option value="user">User</option>
-                                        <option>Tour Leader</option>
-                                        <option>Assistenza Aeroportuale</option>
-                                        <option>Assistenza Hotel</option>
-                                        <option>Coordinatore</option>
-                                    </select>
-                                    <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                </div>
-                                <div className="flex justify-end space-x-2">
-                                    <IconButton icon={<PencilIcon className="w-5 h-5" />} />
-                                    <IconButton icon={<TrashIcon className="w-5 h-5" />} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-                                <Input value="Laura" />
-                                <Input value="Bianchi" />
-                                <Input value="l.bianchi@example.c" />
-                                <div className="relative">
-                                    <select defaultValue="user" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
-                                        <option value="" disabled>-- Aggiungi Ruolo --</option>
-                                        <option value="user">User</option>
-                                        <option>Tour Leader</option>
-                                        <option>Assistenza Aeroportuale</option>
-                                        <option>Assistenza Hotel</option>
-                                        <option>Coordinatore</option>
-                                    </select>
-                                    <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                </div>
-                                <div className="flex justify-end space-x-2">
-                                    <IconButton icon={<PencilIcon className="w-5 h-5" />} />
-                                    <IconButton icon={<TrashIcon className="w-5 h-5" />} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
-                                <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Partecipante
-                            </button>
-                        </div>
-                    </div>
-                </Section>
-
             </div>
 
-            <footer className="mt-8 pt-6 border-t border-gray-200 flex justify-end items-center space-x-4">
+            <footer className="mt-12 pt-6 border-t border-gray-200 flex justify-end items-center space-x-4">
                 <button 
                     onClick={onCancel}
                     className="bg-gray-200 text-gray-800 font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-300 transition-colors">
                     Annulla
                 </button>
                 <button 
-                    type="button"
-                    onClick={() => {}} 
-                    className="bg-white border border-gray-300 text-gray-700 font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
-                    Salva Bozza
-                </button>
-                <button 
                     onClick={onSave}
                     className="bg-blue-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
-                    {isEditing ? 'Aggiorna' : 'Salva e Pubblica'}
+                    Salva Viaggio
                 </button>
             </footer>
         </div>
