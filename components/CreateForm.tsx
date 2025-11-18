@@ -168,17 +168,6 @@ const CreateForm: React.FC<CreateFormProps> = ({ onCancel, onSave }) => {
                  <FormField label="Form Title" required>
                     <Input placeholder="e.g., Dietary Restrictions & Allergies" defaultValue="Dietary Restrictions & Allergies" />
                 </FormField>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="Associated Trip" required>
-                        <Select value="Trip to Ibiza">
-                            <option value="" disabled>-- Select a trip --</option>
-                            <option>Trip to Ibiza</option>
-                            <option>Sales Kick-off Dubai</option>
-                            <option>Team Retreat Mykonos</option>
-                        </Select>
-                    </FormField>
-                    <div />
-                </div>
                 <FormField label="Form Description">
                     <Textarea placeholder="Provide a brief description or instructions for this form." />
                 </FormField>

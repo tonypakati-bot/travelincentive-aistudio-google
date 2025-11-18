@@ -5,9 +5,10 @@ import Trip from './components/Trip';
 import CreateTrip from './components/CreateTrip';
 import Communications from './components/Communications';
 import CreateCommunication from './components/CreateCommunication';
-import Forms from './components/Forms';
+import Forms, { Form } from './components/Forms';
 import CreateForm from './components/CreateForm';
 import ManageParticipants from './components/ManageParticipants';
+import ManageContacts from './components/ManageContacts';
 import Reports from './components/Reports';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsConditions, { initialDocuments, TermsDocument } from './components/TermsConditions';
@@ -15,6 +16,19 @@ import SendReminderModal from './components/SendReminderModal';
 import SendInvitesModal from './components/SendInvitesModal';
 import Documents from './components/Documents';
 import UsefulInformations, { initialInformations, UsefulInfoEntry } from './components/UsefulInformations';
+import { Contact } from './components/AddContactModal';
+
+const initialContacts: Contact[] = [
+    { id: 1, name: 'Mario Rossi', category: 'Tour Leader', phone: '+39 123 456789', email: 'm.rossi@example.com', notes: 'Referente h24 per il gruppo Milano' },
+    { id: 2, name: 'Laura Verdi', category: 'Assistenza Aeroportuale', phone: '+39 987 654321', email: 'l.verdi@example.com', notes: 'Presente in aeroporto Malpensa per partenze e arrivi' },
+    { id: 3, name: 'Giuseppe Bianchi', category: 'Assistenza Hotel', phone: '+39 456 123789', email: 'g.bianchi@example.com', notes: 'Contatto in hotel per check-in e check-out' },
+];
+
+const initialForms: Form[] = [
+    { id: 1, name: 'Dietary Restrictions & Allergies', trip: 'Trip to Ibiza', responses: '65/80' },
+    { id: 2, name: 'Activity Preferences', trip: 'Sales Kick-off Dubai', responses: '80/85' },
+    { id: 3, name: 'Post-Trip Feedback', trip: 'Team Retreat Mykonos', responses: '145/150' },
+];
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState('dashboard');
@@ -32,6 +46,8 @@ const App: React.FC = () => {
   
   const [usefulInformations, setUsefulInformations] = useState<UsefulInfoEntry[]>(initialInformations);
   const [termsDocuments, setTermsDocuments] = useState<TermsDocument[]>(initialDocuments);
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
+  const [forms, setForms] = useState<Form[]>(initialForms);
 
 
   // Trip form handlers
@@ -118,7 +134,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (tripFormMode !== 'hidden') {
-      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} usefulInformations={usefulInformations} termsDocuments={termsDocuments} />;
+      return <CreateTrip onCancel={handleCloseTripForm} onSave={handleSaveTripForm} isEditing={tripFormMode === 'edit'} usefulInformations={usefulInformations} termsDocuments={termsDocuments} contacts={contacts} forms={forms} />;
     }
 
     if (isCommFormVisible) {
@@ -134,6 +150,8 @@ const App: React.FC = () => {
         return <Dashboard onCreateTrip={handleCreateTrip} onCreateCommunication={handleCreateCommunication} onSendReminder={handleOpenReminderModal} onSendInvites={handleOpenInvitesModal} />;
       case 'manage-trip':
         return <Trip onCreateTrip={handleCreateTrip} onEditTrip={handleEditTrip} onCreateCommunication={handleCreateCommunication} />;
+      case 'manage-contacts':
+        return <ManageContacts contacts={contacts} setContacts={setContacts} />;
       case 'manage-participants':
         return <ManageParticipants onSendReminder={handleOpenReminderModal} />;
       case 'communications':
@@ -141,7 +159,7 @@ const App: React.FC = () => {
       case 'useful-informations':
         return <UsefulInformations informations={usefulInformations} setInformations={setUsefulInformations} />;
       case 'forms':
-        return <Forms onCreateForm={handleCreateForm} />;
+        return <Forms onCreateForm={handleCreateForm} forms={forms} />;
       case 'privacy-policy':
         return <PrivacyPolicy />;
       case 'terms-conditions':

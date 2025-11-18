@@ -1,7 +1,8 @@
 import React from 'react';
 import { SearchIcon, PencilIcon } from './icons';
 
-type Form = {
+export type Form = {
+    id: number;
     name: string;
     trip: string;
     responses: string;
@@ -9,15 +10,10 @@ type Form = {
 
 interface FormsProps {
   onCreateForm: () => void;
+  forms: Form[];
 }
 
-const forms: Form[] = [
-    { name: 'Dietary Restrictions & Allergies', trip: 'Trip to Ibiza', responses: '65/80' },
-    { name: 'Activity Preferences', trip: 'Sales Kick-off Dubai', responses: '80/85' },
-    { name: 'Post-Trip Feedback', trip: 'Team Retreat Mykonos', responses: '145/150' },
-];
-
-const Forms: React.FC<FormsProps> = ({ onCreateForm }) => {
+const Forms: React.FC<FormsProps> = ({ onCreateForm, forms }) => {
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -55,8 +51,8 @@ const Forms: React.FC<FormsProps> = ({ onCreateForm }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {forms.map((form, index) => (
-                        <tr key={index} className="bg-white border-b last:border-b-0 hover:bg-gray-50">
+                    {forms.map((form) => (
+                        <tr key={form.id} className="bg-white border-b last:border-b-0 hover:bg-gray-50">
                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 {form.name}
                             </th>

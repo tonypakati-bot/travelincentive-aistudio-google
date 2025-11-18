@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon } from './icons';
+import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon, FormIcon } from './icons';
 import { UsefulInfoEntry } from './UsefulInformations';
 import { TermsDocument } from './TermsConditions';
+import { Contact } from './AddContactModal';
+import { Form } from './Forms';
 
 interface CreateTripProps {
     onCancel: () => void;
@@ -9,6 +11,8 @@ interface CreateTripProps {
     isEditing?: boolean;
     usefulInformations: UsefulInfoEntry[];
     termsDocuments: TermsDocument[];
+    contacts: Contact[];
+    forms: Form[];
 }
 
 const Section: React.FC<{ title: string; children: React.ReactNode; actions?: React.ReactNode; isOpen: boolean; onClick: () => void; }> = ({ title, children, actions, isOpen, onClick }) => (
@@ -179,8 +183,26 @@ const DetailIconSelect: React.FC<{
     );
 };
 
+const ImageUrlInput: React.FC<{
+    label: string;
+}> = ({ label }) => {
+    return (
+        <FormField label={label}>
+            <div className="relative flex items-center">
+                <Input 
+                    type="text"
+                    placeholder="Incolla l'URL dell'immagine"
+                    className="pr-12 w-full"
+                />
+                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm font-medium text-gray-500 pointer-events-none">
+                    URL
+                </span>
+            </div>
+        </FormField>
+    );
+};
 
-const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments }) => {
+const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = false, usefulInformations, termsDocuments, contacts, forms }) => {
     const [openSections, setOpenSections] = useState<number[]>([1]);
     const [activeFlightTab, setActiveFlightTab] = useState('andata');
     const [allowCompanion, setAllowCompanion] = useState<'yes' | 'no'>('no');
@@ -190,6 +212,10 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
         { id: 1, type: null, value: 'Please bring sunscreen, a hat, and swimwear. Towels and snorkeling gear will be provided.' },
         { id: 2, type: null, value: 'Smart Casual' },
         { id: 3, type: null, value: 'Via della Conciliazione, 4' },
+    ]);
+
+    const [tripContacts, setTripContacts] = useState<{id: number, groupId: string, contactId: string}[]>([
+        { id: Date.now(), groupId: '', contactId: '' }
     ]);
     
     const handleToggleSection = (index: number) => {
@@ -216,24 +242,18 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
         setAdditionalDetails(prev => prev.map(d => d.id === id ? { ...d, type } : d));
     };
 
-    const ImageUrlInput: React.FC<{
-        label: string;
-    }> = ({ label }) => {
-        return (
-            <FormField label={label}>
-                <div className="relative flex items-center">
-                    <Input 
-                        type="text"
-                        placeholder="Incolla l'URL dell'immagine"
-                        className="pr-12 w-full"
-                    />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm font-medium text-gray-500 pointer-events-none">
-                        URL
-                    </span>
-                </div>
-            </FormField>
-        );
+    const handleAddTripContact = () => {
+        setTripContacts(prev => [...prev, { id: Date.now(), groupId: '', contactId: '' }]);
     };
+
+    const handleRemoveTripContact = (id: number) => {
+        setTripContacts(prev => prev.filter(c => c.id !== id));
+    };
+
+    const handleTripContactChange = (id: number, field: 'groupId' | 'contactId', value: string) => {
+        setTripContacts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    };
+
 
     return (
         <div className="p-8">
@@ -282,7 +302,7 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                 </div>
                             </FormField>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <FormField label="Useful Informations">
                                 <div className="relative">
                                     <InformationCircleIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
@@ -290,7 +310,7 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                         defaultValue=""
                                         className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
                                     >
-                                        <option value="" disabled>-- Seleziona un'informazione utile --</option>
+                                        <option value="" disabled>-- Seleziona --</option>
                                         {usefulInformations.map(info => (
                                             <option key={info.id} value={info.destinationName}>{info.destinationName}</option>
                                         ))}
@@ -305,9 +325,24 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                         defaultValue=""
                                         className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
                                     >
-                                        <option value="" disabled>-- Seleziona un documento --</option>
+                                        <option value="" disabled>-- Seleziona --</option>
                                         {termsDocuments.map(doc => (
                                             <option key={doc.id} value={doc.title}>{doc.title}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                </div>
+                            </FormField>
+                            <FormField label="Form di Registrazione">
+                                <div className="relative">
+                                    <FormIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                    <select
+                                        defaultValue=""
+                                        className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none"
+                                    >
+                                        <option value="" disabled>-- Seleziona --</option>
+                                        {forms.map(form => (
+                                            <option key={form.id} value={form.id}>{form.name}</option>
                                         ))}
                                     </select>
                                     <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
@@ -450,6 +485,9 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                         <div className="pt-6">
                             {activeFlightTab === 'andata' ? (
                                 <div>
+                                    <FormField label="Titolo (Voli di Andata)" className="mb-6">
+                                        <Input placeholder="e.g. Voli Gruppo Milano" />
+                                    </FormField>
                                     <FormField label="Note Importanti (Voli di Andata)" className="mb-6">
                                         <Textarea 
                                             rows={2} 
@@ -509,6 +547,9 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                 </div>
                             ) : (
                                 <div>
+                                    <FormField label="Titolo (Voli di Ritorno)" className="mb-6">
+                                        <Input placeholder="e.g. Voli Ritorno Gruppo Milano" />
+                                    </FormField>
                                     <FormField label="Note Importanti (Voli di Ritorno)" className="mb-6">
                                         <Textarea 
                                             rows={2}
@@ -566,53 +607,51 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                     onClick={() => handleToggleSection(3)}
                 >
                      <div className="space-y-4 mb-6">
-                        <div className="relative p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <FormField label="Gruppo Partenza">
-                                    <div className="relative">
-                                        <select defaultValue="" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
-                                            <option value="" disabled>-- Seleziona Gruppo --</option>
-                                            <option>Milano</option>
-                                            <option>Roma</option>
-                                            <option>Venezia</option>
-                                            <option>Vip</option>
-                                        </select>
-                                        <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                    </div>
-                                </FormField>
-                                <FormField label="Nome Contatto">
-                                    <Input placeholder="Mario Rossi" />
-                                </FormField>
-                                <FormField label="Categoria">
-                                    <div className="relative">
-                                        <select defaultValue="" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
-                                            <option value="" disabled>-- Seleziona Categoria --</option>
-                                            <option>Tour Leader</option>
-                                            <option>Assistenza Aeroportuale</option>
-                                            <option>Assistenza Hotel</option>
-                                            <option>Coordinatore</option>
-                                        </select>
-                                        <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-                                    </div>
-                                </FormField>
+                        {tripContacts.map((tc, index) => (
+                            <div key={tc.id} className="relative p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField label="Gruppo Partenza">
+                                        <div className="relative">
+                                            <select 
+                                                value={tc.groupId}
+                                                onChange={(e) => handleTripContactChange(tc.id, 'groupId', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
+                                            >
+                                                <option value="" disabled>-- Seleziona Gruppo --</option>
+                                                <option>Milano</option>
+                                                <option>Roma</option>
+                                                <option>Venezia</option>
+                                                <option>Vip</option>
+                                            </select>
+                                            <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                        </div>
+                                    </FormField>
+                                    <FormField label="Seleziona Contatto">
+                                        <div className="relative">
+                                            <select 
+                                                value={tc.contactId}
+                                                onChange={(e) => handleTripContactChange(tc.id, 'contactId', e.target.value)}
+                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
+                                            >
+                                                <option value="" disabled>-- Seleziona Contatto --</option>
+                                                {contacts.map(c => (
+                                                    <option key={c.id} value={c.id}>{c.name} ({c.category})</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
+                                        </div>
+                                    </FormField>
+                                </div>
+                                <div className="absolute top-3 right-3">
+                                    <IconButton onClick={() => handleRemoveTripContact(tc.id)} icon={<TrashIcon className="w-5 h-5"/>} />
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                               <FormField label="Telefono">
-                                    <Input placeholder="+39 123 4567" />
-                                </FormField>
-                                <FormField label="Email">
-                                    <Input placeholder="m.rossi@ex" />
-                                </FormField>
-                                <FormField label="Note">
-                                    <Input placeholder="Referente h" />
-                                </FormField>
-                            </div>
-                            <div className="absolute top-3 right-3">
-                                <IconButton icon={<TrashIcon className="w-5 h-5"/>} />
-                            </div>
-                        </div>
+                        ))}
                     </div>
-                    <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
+                    <button 
+                        onClick={handleAddTripContact}
+                        className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors"
+                    >
                         <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Contatto
                     </button>
                 </Section>
@@ -810,6 +849,12 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                 <button 
                     onClick={onCancel}
                     className="bg-gray-200 text-gray-800 font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-300 transition-colors">
+                    Annulla
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => {}} 
+                    className="bg-white border border-gray-300 text-gray-700 font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
                     Salva Bozza
                 </button>
                 <button 

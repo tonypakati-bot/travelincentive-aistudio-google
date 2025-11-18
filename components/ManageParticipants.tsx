@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { SearchIcon, PencilIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, UploadIcon, ChevronDownIcon, DownloadIcon } from './icons';
 
-type ParticipantStatus = 'Registered' | 'Invited' | 'Incomplete';
+type ParticipantStatus = 'Registered' | 'Invited';
 
 type Participant = {
     id: number;
@@ -23,7 +23,7 @@ const participants: Participant[] = [
     { id: 4, name: 'Marco Gialli', email: 'm.gialli@example.com', trip: 'Sales Kick-off Dubai', group: 'Milano', status: 'Registered' },
     { id: 5, name: 'Mario Rossi', email: 'm.rossi@example.com', trip: 'Trip to Ibiza', group: 'Milano', status: 'Registered' },
     { id: 6, name: 'Paolo Verdi', email: 'p.verdi@example.com', trip: 'Sales Kick-off Dubai', group: 'VIP', status: 'Invited' },
-    { id: 7, name: 'Sara Neri', email: 's.neri@example.com', trip: 'Team Retreat Mykonos', group: 'Tutti', status: 'Incomplete' },
+    { id: 7, name: 'Sara Neri', email: 's.neri@example.com', trip: 'Team Retreat Mykonos', group: 'Tutti', status: 'Invited' },
 ];
 
 
@@ -33,15 +33,13 @@ const getStatusBadge = (status: ParticipantStatus) => {
             return 'bg-green-100 text-green-800';
         case 'Invited':
             return 'bg-blue-100 text-blue-800';
-        case 'Incomplete':
-            return 'bg-yellow-100 text-yellow-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
 };
 
 const uniqueTrips = ['All Trips', ...Array.from(new Set(participants.map(p => p.trip)))];
-const allStatuses: ParticipantStatus[] = ['Registered', 'Invited', 'Incomplete'];
+const allStatuses: ParticipantStatus[] = ['Registered', 'Invited'];
 
 const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -114,9 +112,24 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
         );
     };
 
+    const canSendReminder = useMemo(() => {
+        const selectedObjs = participants.filter(p => selectedParticipants.includes(p.id));
+        return selectedObjs.some(p => p.status !== 'Registered');
+    }, [selectedParticipants]);
+
     const handleOpenReminderModal = () => {
         if (selectedParticipants.length > 0) {
-            onSendReminder(selectedParticipants.length, () => setSelectedParticipants([]));
+            // Filter out participants who are already Registered
+            const selectedObjs = participants.filter(p => selectedParticipants.includes(p.id));
+            const participantsToRemind = selectedObjs.filter(p => p.status !== 'Registered');
+
+            if (participantsToRemind.length === 0) {
+                alert('Tutti i partecipanti selezionati risultano già registrati. Non è necessario inviare reminder.');
+                return;
+            }
+
+            // Send reminder only to the count of participants who need it
+            onSendReminder(participantsToRemind.length, () => setSelectedParticipants([]));
         }
     };
 
@@ -176,11 +189,13 @@ const ManageParticipants: React.FC<ManageParticipantsProps> = ({ onSendReminder 
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold text-gray-700">{selectedParticipants.length} partecipante/i selezionato/i</span>
                          <div className="flex items-center space-x-4">
-                            <button 
-                                onClick={handleOpenReminderModal}
-                                className="bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                Invia Reminder
-                            </button>
+                            {canSendReminder && (
+                                <button 
+                                    onClick={handleOpenReminderModal}
+                                    className="bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    Invia Reminder
+                                </button>
+                            )}
                             <button 
                                 onClick={() => setSelectedParticipants([])}
                                 className="bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg hover:bg-gray-300 transition-colors">

@@ -83,7 +83,7 @@ const CustomizeFieldsModal: React.FC<CustomizeFieldsModalProps> = ({ section, on
     const handleAddNewField = () => {
         if (newFieldName.trim() === '') return;
         const newField: Field = {
-            id: newFieldName.trim().toLowerCase().replace(/\s+/g, '-'),
+            id: `${newFieldName.trim().toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
             name: newFieldName.trim(),
             enabled: true,
             required: false,

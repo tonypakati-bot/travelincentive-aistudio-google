@@ -44,14 +44,14 @@ const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
 );
 
 const defaultInfo: UsefulInfoData = {
-    destinationName: "Abu Dhabi",
-    country: "Emirati Arabi Uniti",
-    documents: "Entry into the Emirates only requires a passport with a minimum validity of 6 months. No visa is needed for EU citizens for stays up to 90 days.",
-    timeZone: "The time difference is GMT+3, which is 3 hours ahead of Italian time (2 hours when daylight saving time is in effect).",
-    currency: "The Emirati Dirham (AED) is worth approximately €0.25. Major credit cards are accepted everywhere.",
-    language: "The official language is Arabic. English is understood and widely spoken in tourist areas.",
-    climate: "The climate in the United Arab Emirates is subtropical and arid. Rain is rare. The best time to visit is from October to April when temperatures are milder.",
-    vaccinationsHealth: "No mandatory vaccinations are required. Medicines are readily available in numerous pharmacies.",
+    destinationName: "",
+    country: "",
+    documents: "",
+    timeZone: "",
+    currency: "",
+    language: "",
+    climate: "",
+    vaccinationsHealth: "",
 };
 
 const UsefulInformationModal: React.FC<UsefulInformationModalProps> = ({ isOpen, onClose, onSave, infoToEdit }) => {

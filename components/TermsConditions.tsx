@@ -64,6 +64,19 @@ export const initialDocuments: TermsDocument[] = [
 
 const tripsForSelect = ['Trip to Ibiza', 'Sales Kick-off Dubai', 'Team Retreat Mykonos'];
 
+const FormatButton: React.FC<{ command: string, title: string, children: React.ReactNode, applyFormat: (command: string) => void }> = ({ command, title, children, applyFormat }) => (
+    <button 
+        type="button" 
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => applyFormat(command)} 
+        className="p-2 rounded hover:bg-gray-200" 
+        title={title}
+    >
+        {children}
+    </button>
+);
+
+
 // --- Rich Text Editor Toolbar ---
 const Toolbar: React.FC<{ editorRef: React.RefObject<HTMLDivElement> }> = ({ editorRef }) => {
     const applyFormat = (command: string, value: string | null = null) => {
@@ -71,28 +84,16 @@ const Toolbar: React.FC<{ editorRef: React.RefObject<HTMLDivElement> }> = ({ edi
         document.execCommand(command, false, value);
     };
 
-    const FormatButton: React.FC<{ command: string, title: string, children: React.ReactNode }> = ({ command, title, children }) => (
-        <button 
-            type="button" 
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => applyFormat(command)} 
-            className="p-2 rounded hover:bg-gray-200" 
-            title={title}
-        >
-            {children}
-        </button>
-    );
-
     return (
         <div className="flex items-center space-x-1 p-2 bg-gray-100 border border-b-0 border-gray-300 rounded-t-lg text-gray-700">
-            <FormatButton command="bold" title="Bold"><strong className="font-bold w-5 text-center">B</strong></FormatButton>
-            <FormatButton command="italic" title="Italic"><em className="italic w-5 text-center">I</em></FormatButton>
-            <FormatButton command="underline" title="Underline"><u className="underline w-5 text-center">U</u></FormatButton>
+            <FormatButton command="bold" title="Bold" applyFormat={applyFormat}><strong className="font-bold w-5 text-center">B</strong></FormatButton>
+            <FormatButton command="italic" title="Italic" applyFormat={applyFormat}><em className="italic w-5 text-center">I</em></FormatButton>
+            <FormatButton command="underline" title="Underline" applyFormat={applyFormat}><u className="underline w-5 text-center">U</u></FormatButton>
             <span className="w-px h-5 bg-gray-300 mx-2"></span>
-            <FormatButton command="insertUnorderedList" title="Bulleted List">
+            <FormatButton command="insertUnorderedList" title="Bulleted List" applyFormat={applyFormat}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
             </FormatButton>
-             <FormatButton command="insertOrderedList" title="Numbered List">
+             <FormatButton command="insertOrderedList" title="Numbered List" applyFormat={applyFormat}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3a1 1 0 00-1 1v1.333H5.333a1 1 0 100 1.334h3.667v1.333H5.333a1 1 0 100 1.334h3.667v1.333H5.333a1 1 0 100 1.334H9V16a1 1 0 102 0v-1.333h3.667a1 1 0 100-1.334h-3.667v-1.333h3.667a1 1 0 100-1.334h-3.667V8.667h3.667a1 1 0 100-1.334H11V4a1 1 0 00-1-1z" clipRule="evenodd" fillRule="evenodd"></path></svg>
             </FormatButton>
         </div>

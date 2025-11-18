@@ -29,18 +29,16 @@ const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
     />
 );
 
-const SendReminderModal: React.FC<SendReminderModalProps> = ({ isOpen, onClose, onSend, participantCount }) => {
-    const [isEditing, setIsEditing] = useState(false);
+// Constants moved outside the component to prevent re-creation on every render
+const tripName = "Trip to Ibiza";
+const registrationDeadline = "31 Luglio, 2026";
+const supportContact = "il nostro team di supporto";
+const supportContactDetails = "support@example.com";
+const organizingTeam = "Il Team Organizzativo";
+const companyName = "IncentiveTravel";
 
-    const tripName = "Trip to Ibiza";
-    const registrationDeadline = "31 Luglio, 2026";
-    const supportContact = "il nostro team di supporto";
-    const supportContactDetails = "support@example.com";
-    const organizingTeam = "Il Team Organizzativo";
-    const companyName = "IncentiveTravel";
-
-    const defaultSubject = `🔔 ULTIMO PROMEMORIA: Completa la tua Registrazione al ${tripName} – Scadenza ${registrationDeadline}`;
-    const defaultBody = `Ciao [Nome del Destinatario],
+const defaultSubject = `🔔 ULTIMO PROMEMORIA: Completa la tua Registrazione al ${tripName} – Scadenza ${registrationDeadline}`;
+const defaultBody = `Ciao [Nome del Destinatario],
 
 Ti scriviamo come cortese sollecito per ricordarti di completare la tua registrazione per il ${tripName}.
 
@@ -68,6 +66,9 @@ Cordiali saluti,
 ${organizingTeam}
 ${companyName}`;
 
+
+const SendReminderModal: React.FC<SendReminderModalProps> = ({ isOpen, onClose, onSend, participantCount }) => {
+    const [isEditing, setIsEditing] = useState(false);
     const [subject, setSubject] = useState(defaultSubject);
     const [body, setBody] = useState(defaultBody);
 

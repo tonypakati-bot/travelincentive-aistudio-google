@@ -3,6 +3,7 @@ import {
     DashboardIcon, 
     CreationIcon, 
     UsersIcon, 
+    ContactsIcon,
     FlightIcon, 
     HotelIcon,
     AgendaIcon,
@@ -47,6 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
     const navItems = [
         { key: 'dashboard', icon: <DashboardIcon className="w-5 h-5"/>, label: 'Dashboard' },
         { key: 'manage-trip', icon: <CreationIcon className="w-5 h-5"/>, label: 'Manage Trip' },
+        { key: 'manage-contacts', icon: <ContactsIcon className="w-5 h-5"/>, label: 'Manage Contacts' },
         { key: 'manage-participants', icon: <UsersIcon className="w-5 h-5"/>, label: 'Manage Participants' },
         { key: 'forms', icon: <FormIcon className="w-5 h-5"/>, label: 'Forms' },
         { key: 'communications', icon: <CommunicationIcon className="w-5 h-5"/>, label: 'Communications' },
