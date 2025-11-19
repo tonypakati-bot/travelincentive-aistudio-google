@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon, FormIcon } from './icons';
+import { AgendaIcon, LocationMarkerIcon, InformationCircleIcon, PlusIcon, TrashIcon, PencilIcon, ClockIcon, ChevronDownIcon, CheckIcon, UploadIcon, RestaurantIcon, FlightIcon, HotelIcon, HangerIcon, DocumentIcon, FormIcon, XIcon } from './icons';
 import { UsefulInfoEntry } from './UsefulInformations';
 import { TermsDocument } from './TermsConditions';
 import { PrivacyDocument } from './PrivacyPolicy';
@@ -210,6 +210,11 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
     const [allowCompanion, setAllowCompanion] = useState<'yes' | 'no'>('no');
     const [businessFlights, setBusinessFlights] = useState<'yes' | 'no'>('no');
     
+    // Group State
+    const [groups, setGroups] = useState<string[]>(['Milano', 'Roma', 'Venezia', 'Vip']);
+    const [isAddingGroup, setIsAddingGroup] = useState(false);
+    const [newGroupInput, setNewGroupInput] = useState('');
+
     const [additionalDetails, setAdditionalDetails] = useState<AdditionalDetail[]>([
         { id: 1, type: null, value: 'Please bring sunscreen, a hat, and swimwear. Towels and snorkeling gear will be provided.' },
         { id: 2, type: null, value: 'Smart Casual' },
@@ -256,6 +261,28 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
         setTripContacts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
     };
 
+    // Group Handlers
+    const handleRemoveGroup = (group: string) => {
+        setGroups(prev => prev.filter(g => g !== group));
+    };
+
+    const handleConfirmAddGroup = () => {
+        if (newGroupInput.trim()) {
+            setGroups(prev => [...prev, newGroupInput.trim()]);
+        }
+        setNewGroupInput('');
+        setIsAddingGroup(false);
+    };
+    
+    const handleKeyDownGroup = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleConfirmAddGroup();
+        } else if (e.key === 'Escape') {
+            setNewGroupInput('');
+            setIsAddingGroup(false);
+        }
+    };
 
     return (
         <div className="p-8">
@@ -270,18 +297,6 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                     title="Sezione 1: Informazioni Base del Viaggio"
                     isOpen={openSections.includes(1)}
                     onClick={() => handleToggleSection(1)}
-                    actions={
-                        <button 
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (!openSections.includes(1)) handleToggleSection(1);
-                            }}
-                            className="text-sm font-semibold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center"
-                        >
-                            <PencilIcon className="w-4 h-4 mr-1.5" /> Modifica
-                        </button>
-                    }
                 >
                     <div className="space-y-6">
                         <FormField label="Nome Cliente" required>
@@ -380,41 +395,50 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                         </div>
                         <FormField label="Gruppi">
                             <div className="flex items-center space-x-2 flex-wrap gap-y-2">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-800">
-                                    Milano
-                                    <button type="button" className="ml-1.5 flex-shrink-0 text-gray-500 hover:text-gray-700">
-                                        <svg className="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                                            <path strokeLinecap="round" strokeWidth="1.2" d="M1 1l6 6m0-6L1 7" />
-                                        </svg>
+                                {groups.map((group) => (
+                                    <span 
+                                        key={group} 
+                                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                            group.toLowerCase() === 'vip' 
+                                            ? 'bg-amber-200 text-amber-800' 
+                                            : 'bg-gray-200 text-gray-800'
+                                        }`}
+                                    >
+                                        {group}
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleRemoveGroup(group)}
+                                            className={`ml-1.5 flex-shrink-0 hover:text-opacity-75 focus:outline-none ${
+                                                group.toLowerCase() === 'vip' ? 'text-amber-600 hover:text-amber-800' : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        >
+                                           <XIcon className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                                
+                                {isAddingGroup ? (
+                                    <div className="inline-flex items-center">
+                                        <input
+                                            type="text"
+                                            value={newGroupInput}
+                                            onChange={(e) => setNewGroupInput(e.target.value)}
+                                            onBlur={handleConfirmAddGroup}
+                                            onKeyDown={handleKeyDownGroup}
+                                            autoFocus
+                                            className="px-3 py-1 rounded-lg text-sm border border-blue-500 outline-none w-32"
+                                            placeholder="Nome..."
+                                        />
+                                    </div>
+                                ) : (
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsAddingGroup(true)}
+                                        className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Gruppo
                                     </button>
-                                </span>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-800">
-                                    Roma
-                                    <button type="button" className="ml-1.5 flex-shrink-0 text-gray-500 hover:text-gray-700">
-                                        <svg className="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                                            <path strokeLinecap="round" strokeWidth="1.2" d="M1 1l6 6m0-6L1 7" />
-                                        </svg>
-                                    </button>
-                                </span>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-800">
-                                    Venezia
-                                    <button type="button" className="ml-1.5 flex-shrink-0 text-gray-500 hover:text-gray-700">
-                                        <svg className="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                                            <path strokeLinecap="round" strokeWidth="1.2" d="M1 1l6 6m0-6L1 7" />
-                                        </svg>
-                                    </button>
-                                </span>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-200 text-amber-800">
-                                    Vip
-                                    <button type="button" className="ml-1.5 flex-shrink-0 text-amber-600 hover:text-amber-800">
-                                        <svg className="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                                            <path strokeLinecap="round" strokeWidth="1.2" d="M1 1l6 6m0-6L1 7" />
-                                        </svg>
-                                    </button>
-                                </span>
-                                <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
-                                    <PlusIcon className="w-4 h-4 mr-1" /> Aggiungi Gruppo
-                                </button>
+                                )}
                             </div>
                         </FormField>
                         <FormField label="Aggiungi accompagnatore">
@@ -531,10 +555,9 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                                     <div className="relative">
                                                         <select defaultValue="" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8">
                                                             <option value="" disabled>-- Seleziona Gruppo --</option>
-                                                            <option>Milano</option>
-                                                            <option>Roma</option>
-                                                            <option>Venezia</option>
-                                                            <option>Vip</option>
+                                                            {groups.map(group => (
+                                                                <option key={group} value={group}>{group}</option>
+                                                            ))}
                                                         </select>
                                                         <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
                                                     </div>
@@ -647,10 +670,9 @@ const CreateTrip: React.FC<CreateTripProps> = ({ onCancel, onSave, isEditing = f
                                                 className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition appearance-none pr-8"
                                             >
                                                 <option value="" disabled>-- Seleziona Gruppo --</option>
-                                                <option>Milano</option>
-                                                <option>Roma</option>
-                                                <option>Venezia</option>
-                                                <option>Vip</option>
+                                                {groups.map(group => (
+                                                    <option key={group} value={group}>{group}</option>
+                                                ))}
                                             </select>
                                             <ChevronDownIcon className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
                                         </div>
